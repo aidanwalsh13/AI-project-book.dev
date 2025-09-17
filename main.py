@@ -1,4 +1,5 @@
 import os
+import sys # python list all command line arguments
 from dotenv import load_dotenv # environnment variables from .env file
 from google import genai
 
@@ -13,16 +14,33 @@ client = genai.Client(api_key=api_key) # client instance handles API key interna
 # client parameter = local variable (api_key=api_key)
 
 def main():
-	print("Hello from ai-project!")
+#	print("Hello from ai-project!")
+	if len(sys.argv) < 2: # 1 = [0] = title. 2 = [1] = 1st argument. so < 2 = lacking argument
+		print("Error: Please provide a prompt as a command-line argument.")
+		sys.exit(1)
+	user_prompt = sys.argv[1]
+	verbose = False
+#1		user_prompt = input("What would you like to ask Gemini? \n> ")
+	if len(sys.argv) > 2 and sys.argv[2] == "--verbose":
+		verbose = True
+"""Potential reasons for command line interface [1] over user interface [2]
+Automation: It makes it much easier to automate tasks. You can write another script that calls your main.py
+with specific arguments without needing to simulate user input.
+Non-interactive Use: If your program is part of a larger pipeline or run by another program, there might not be a
+"user" to type in the prompt interactively. Command-line arguments allow the program to run without human intervention.
+History and Repeatability: Command-line arguments are part of your shell's history, making it easy to rerun the exact
+same command or modify it slightly."""
 	try:
-		response = client.models.generate_content(model="gemini-2.0-flash-001", contents="Why is Boot.dev such a great place to learn backend development? Use one paragraph maximum.")
+		response = client.models.generate_content(model="gemini-2.0-flash-001", contents=user_prompt)
 		print("\nAPI Response:")
 		print("-------------")
 		print(response.text)
-		print("\nToken Usage:")
-		print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
-		print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
-		print("\nAPI call successful! 🎉")
+		if verbose:
+			print(f"User prompt: {user_prompt}")
+			print("\nToken Usage:")
+			print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
+			print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
+#			print("\nAPI call successful! 🎉")
 	except Exception as e:
 		print(f"An error occurred: {e}")
 
